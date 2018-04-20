@@ -1,0 +1,130 @@
+# ------------------------------------------
+#        EISA analysis instructions
+# ------------------------------------------
+# Scripts for the EISA analysis performed within the associated manuscript
+#  have been developed by Dr Katherine Pillman, University of South Australia.
+#
+# For further details please contact kapillman (at) gmail.com
+#
+# Please note that these instructions assume that python has been installed on the local system
+#  and the user has sufficient access to execute python package installations with super user
+#  access. If this is not available, it may be possible to create a python installation using
+#  a conda managed environment (installed to an appropriate location). Please refer to
+#  https://conda.io/docs/user-guide/tasks/manage-environments.html for further details or
+#  contact your local system administrator.
+
+
+## Installation of required python packages ##
+#
+# Install the pyreference package which provides an interface to work with reference genomes,
+#  for further details please refer to: https://pypi.org/project/pyreference/
+
+sudo pip install pyreference
+
+
+## Set up the required preliminary files ##
+#
+# Pre-process the gene annotation file (iGenomes hg19 genes.gtf) to create much smaller json version
+
+pyreference_gtf_to_json.py genes.gtf
+
+
+# Modify the file Combinatorial_miRNAs/pyreference.cfg to point to the json gtf file you just produced
+# Place this config file in your home directory.
+
+### EISA Analysis ###
+## HMLE vs MesHMLE analysis ##
+##Download the raw data and map to obtain bam file
+
+# Sample name: H_r3
+# ENA Study Accession: PRJEB25061
+# ENA Sample Accession Number: ERS2212956
+# ENA sample name: HMLE_polyAminus_rep3
+
+# Sample name: H_r4
+# ENA Study Accession: PRJEB8225
+# ENA Sample Accession Number: ERS640277
+# ENA sample name: HMLE_polyAminus_rep2
+
+# Sample name: Mneg_r1
+# ENA Study Accession: PRJEB25061
+# ENA Sample Accession Number: ERS2212957
+# ENA sample name: MesHMLE_sineg_polyAminus_rep1
+
+# Sample name: Mneg_r2
+# ENA Study Accession: PRJEB25061
+# ENA Sample Accession Number: ERS2212958
+# ENA sample name: MesHMLE_sineg_polyAminus_rep2
+
+# Sample name: M_r3
+# ENA Study Accession: PRJEB8225
+# ENA Sample Accession Number: ERS640279
+# ENA sample name: mesHMLE_polyAminus_rep2
+
+
+## Get read counts from each bam file ##
+
+# For each bam file, get counts of the number of reads in exons/introns by running the script as follows:
+# the --stranded flag is used because the data is strand-specific.
+# --sample-name should be set from the table above
+
+cursons_bam_get_eisa_counts.py --outdir <outdir> --sample-name <sample_name> --stranded <bam_file>
+
+# Perform EISA analysis for each pair of samples using the 6 sample tables provided
+# The sample tables supply information about sample grouping
+
+for i in 1 2 3 4 5 6; do mkdir r${i}; cursons_counts_do_eisa_analysis_on_pair_of_samples.py --build hg19 --outdir <output_directory> --countdir <path_to_directory_with_count_files> --expt-name r${i} --control HMLE --choose-strand r2 --min-count 24 <path_to_repo>/config/HMLE_vs_MesHMLE_sample_table-r${i}.tsv > r${i}/run.log ; done
+
+## Combine pair-wise EISA runs into one spreadsheet and calculate means ##
+
+cursons_combine_eisa_analyses_into_spreadsheet.py --outdir <output_directory> --basedir <directory_with_output_from_previous_step> --expt-dir-strs r1,r2,r3,r4,r5,r6 --project-name HMLE_vs_MesHMLE --ctrl-name HMLE --expt-name MesHMLE 
+
+## MesHMLE vs miR200c overexpression analysis ##
+
+# Download the raw data and map to obtain bam files:
+
+# Sample name: M_r3
+# ENA Study Accession: PRJEB25042
+# ENA Sample Accession Number: ERS2210893
+# ENA sample name: mesHMLE_polyAplus_rep1
+
+# Sample name: Mneg_r1
+# ENA Study Accession: PRJEB25042
+# ENA Sample Accession Number: ERS2210894
+# ENA sample name: mesHMLE_polyAplus_rep2
+
+# Sample name: Mneg_r2
+# ENA Study Accession: PRJEB25042
+# ENA Sample Accession Number: ERS2210895
+# ENA sample name: mesHMLE_polyAplus_rep3
+
+# Sample name: 200c_r1
+# ENA Study Accession: PRJEB25042
+# ENA Sample Accession Number: ERS2210898
+# ENA sample name: mesHMLE+miR-200c_polyAplus_rep1
+
+# Sample name: 200c_r2
+# ENA Study Accession: PRJEB25042
+# ENA Sample Accession Number: ERS2210899
+# ENA sample name: mesHMLE+miR-200c_polyAplus_rep2
+
+
+## Get read counts from each bam file ##
+
+# For each bam file, get counts of the number of reads in exons/introns by running the script as follows:
+# the --stranded flag is used because the data is strand-specific.
+# --sample-name should be set from the table above
+
+cursons_bam_get_eisa_counts.py --outdir <outdir> --sample-name <sample_name> --stranded <bam_file>
+
+
+# Perform EISA analysis for each pair of samples using the 8 sample tables provided
+# The sample tables supply information about sample grouping
+
+for i in 1 2 3 4 5 6; do mkdir r${i}; cursons_counts_do_eisa_analysis_on_pair_of_samples.py --build hg19 --outdir <output_directory> --countdir <path_to_directory_with_count_files> --expt-name r${i} --control MesHMLE --min-count 24 --choose-strand r2 <path_to_repo>/config/MesHMLE_vs_200c_sample_table-r${i}.tsv > r${i}/run.log; done
+
+## Combine pair-wise EISA runs into one spreadsheet and calculate means ##
+
+cursons_combine_eisa_analyses_into_spreadsheet.py --outdir <output_directory> --basedir <directory_with_output_from_previous_step> --expt-dir-strs r1,r2,r3,r4,r5,r6 --project-name MesHMLE_vs_mir200c --ctrl-name MesHMLE --expt-name miR-200c 
+
+
