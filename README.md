@@ -1,8 +1,7 @@
-# Combinatorial_miRNAs in breast cancer EMT
+# Combinatorial miRNAs in breast cancer EMT
 This code repository accompanies the manuscript **Post-Transcriptional Control Of EMT Is Coordinated Through Combinatorial Targeting By Multiple microRNAs** which is currently under review at Cell Systems.
 
-A pre-print article of this work is available from:
-* https://doi.org/10.1101/138024
+A [pre-print article is available](https://doi.org/10.1101/138024) for this work with the DOI: 10.1101/138024
 
 For further information please contact:
 * Joe Cursons (cursons.j (at) wehi.edu.au) 
@@ -28,8 +27,8 @@ As described in the associated manuscript, this work involves involves a number 
 * PRJEB25061
 * PRJEB25042
 * PRJEB25116
-   * small RNA-seq for the quantification of miRNAs
-   * **NB**: these data are only available for the HMLE and MesHMLE cells, and small RNA-seq was not performed for the miR-200c transfected MesHMLE cells
+  * small RNA-seq for the quantification of miRNAs
+  * **NB**: these data are only available for the HMLE and MesHMLE cells, and small RNA-seq was not performed for the miR-200c transfected MesHMLE cells
 
    
 ## 2. RNA-seq alignment and quantification (general)
@@ -45,6 +44,24 @@ More detailed instructions and scripts to reproduce this analysis are given in '
 ~~~
 sudo pip install pyreference
 ~~~
+
+* Download the data from the [European Nucleotide Archive](http://www.ebi.ac.uk/ena):
+  * **NB**: As demonstrated in 'EISA_instructions.txt' this process is repeated separately for the HMLE-to-MesHMLE and the MesHMLE-to-MesHMLE+miR200c comparisons, as EISA calculates the *change* in intronic and exonic reads between condition pairs.
+  
+| Comparison  | Sample | ENA study num. | ENA sample num. | ENA sample name |
+| ------------- | ------------- | ------------- | ------------- | ------------- |
+| **HMLE** vs MesHMLE | H_r3 | PRJEB25061 | ERS2212956 | HMLE_polyAminus_rep3 |
+| **HMLE** vs MesHMLE | H_r4 | PRJEB8225 | ERS640277 | HMLE_polyAminus_rep2 |
+| HMLE vs **MesHMLE** | Mneg_r1 | PRJEB25061 | ERS2212957 | MesHMLE_sineg_polyAminus_rep1 |
+| HMLE vs **MesHMLE** | Mneg_r2 | PRJEB25061 | ERS2212958 | MesHMLE_sineg_polyAminus_rep2 |
+| HMLE vs **MesHMLE** | M_r3 | PRJEB8225 | ERS640279 | mesHMLE_polyAminus_rep2 |
+| ------------- | ------------- | ------------- | ------------- | ------------- |
+| **MesHMLE** vs MesHMLE+miR200c | M_r3 | PRJEB25042 | ERS2210893 | mesHMLE_polyAplus_rep1 |
+| **MesHMLE** vs MesHMLE+miR200c | Mneg_r1 | PRJEB25042 | ERS2210894 | mesHMLE_polyAplus_rep2 |
+| **MesHMLE** vs MesHMLE+miR200c | Mneg_r2 | PRJEB25042 | ERS2210895 | mesHMLE_polyAplus_rep3 |
+| MesHMLE vs **MesHMLE+miR200c** | 200c_r1 | PRJEB25042 | ERS2210898 | mesHMLE+miR-200c_polyAplus_rep1 |
+| MesHMLE vs **MesHMLE+miR200c** | 200c_r2 | PRJEB25042 | ERS2210899 | mesHMLE+miR-200c_polyAplus_rep2 |
+
 
 * To improve run times and resource allocation, the reference genome gtf file needs to be converted to the json format 
 ~~~
@@ -65,5 +82,3 @@ for i in 1 2 3 4 5 6; do mkdir r${i}; cursons_counts_do_eisa_analysis_on_pair_of
 ~~~
 cursons_combine_eisa_analyses_into_spreadsheet.py --outdir <output_directory> --basedir <directory_with_output_from_previous_step> --expt-dir-strs r1,r2,r3,r4,r5,r6 --project-name HMLE_vs_MesHMLE --ctrl-name HMLE --expt-name MesHMLE 
 ~~~
-
-* **NB**: As demonstrated in 'EISA_instructions.txt' this process is repeated separately for the HMLE-to-MesHMLE and the MesHMLE-to-MesHMLE+miR200c comparisons, as EISA calculates the *change* in intronic and exonic reads between condition pairs.
